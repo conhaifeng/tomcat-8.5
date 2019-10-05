@@ -39,7 +39,7 @@ public class CatalinaProperties {
 
     private static Properties properties = null;
 
-
+    //静态块：加载属性集
     static {
         loadProperties();
     }
@@ -54,13 +54,13 @@ public class CatalinaProperties {
     }
 
 
-    /**
-     * Load properties.
-     */
+    //加载属性集
     private static void loadProperties() {
 
+        //属性文件输入流
         InputStream is = null;
         try {
+            //属性文件路径：系统属性"catalina.config"
             String configUrl = System.getProperty("catalina.config");
             if (configUrl != null) {
                 is = (new URL(configUrl)).openStream();
@@ -69,6 +69,7 @@ public class CatalinaProperties {
             handleThrowable(t);
         }
 
+        //系统属性为空则 Tomcat项目根目录\conf\catalina.properties文件
         if (is == null) {
             try {
                 File home = new File(Bootstrap.getCatalinaBase());
@@ -80,15 +81,17 @@ public class CatalinaProperties {
             }
         }
 
+        //Tomcat项目根目录\conf\catalina.properties文件不存在则class目录/org/apache/catalina/startup/catalina.properties文件
         if (is == null) {
             try {
                 is = CatalinaProperties.class.getResourceAsStream
-                    ("/org/apache/catalina/startup/catalina.properties");
+                        ("/org/apache/catalina/startup/catalina.properties");
             } catch (Throwable t) {
                 handleThrowable(t);
             }
         }
 
+        //配置文件不为空，加载配置
         if (is != null) {
             try {
                 properties = new Properties();
@@ -105,6 +108,7 @@ public class CatalinaProperties {
             }
         }
 
+        //属性文件仍旧为空，使用空值对象取代null（新建Properties对象）
         if ((is == null)) {
             // Do something
             log.warn("Failed to load catalina.properties");
@@ -112,7 +116,7 @@ public class CatalinaProperties {
             properties = new Properties();
         }
 
-        // Register the properties as system properties
+        // 最后把属性全部注册进System中
         Enumeration<?> enumeration = properties.propertyNames();
         while (enumeration.hasMoreElements()) {
             String name = (String) enumeration.nextElement();

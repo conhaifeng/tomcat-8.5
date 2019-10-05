@@ -72,6 +72,7 @@ public final class SecurityConfig{
                 log.debug("Unable to load properties using CatalinaProperties", ex);
             }
         } finally {
+            //来自CatalinaProperties的package.definition和package.access属性
             packageDefinition = definition;
             packageAccess = access;
         }

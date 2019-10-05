@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -61,11 +62,12 @@ public final class Bootstrap {
 
     private static final Pattern PATH_PATTERN = Pattern.compile("(\".*?\")|(([^,])*)");
 
+    //设置catalina的home路径和base路径（从System中获取catalina.home和catalina.base属性，若为null则设置为当前项目路径/bootstrap.jar并设置到System中）
     static {
-        // Will always be non-null
+        // Debug结果：E:\POJ_IDEA\apache-tomcat-8.5.41-src
         String userDir = System.getProperty("user.dir");
 
-        // Home first
+        // Home first Debug结果：null
         String home = System.getProperty(Globals.CATALINA_HOME_PROP);
         File homeFile = null;
 
@@ -141,6 +143,8 @@ public final class Bootstrap {
     // -------------------------------------------------------- Private Methods
 
 
+    //初始化daemon的第一步——初始化类加载器
+    //初始化类加载器 通用加载器、catalina加载器和共享加载器
     private void initClassLoaders() {
         try {
             commonLoader = createClassLoader("common", null);
@@ -157,10 +161,12 @@ public final class Bootstrap {
         }
     }
 
-
+    //创建类加载器
     private ClassLoader createClassLoader(String name, ClassLoader parent)
         throws Exception {
 
+        //根据加载器名字从Catalina属性集获取属性值（来自catalina.properties）
+        //Debug：value="${catalina.base}/lib","${catalina.base}/lib/*.jar","${catalina.home}/lib","${catalina.home}/lib/*.jar"
         String value = CatalinaProperties.getProperty(name + ".loader");
         if ((value == null) || (value.equals("")))
             return parent;
@@ -171,6 +177,7 @@ public final class Bootstrap {
 
         String[] repositoryPaths = getPaths(value);
 
+        //根据类加载器属性（jar包地址）生成资源集合
         for (String repository : repositoryPaths) {
             // Check for a JAR URL repository
             try {
@@ -198,16 +205,11 @@ public final class Bootstrap {
             }
         }
 
+        //根据jar包路径资源集合创建类加载器——加载指定路径下jar包的UrlClassLoader
         return ClassLoaderFactory.createClassLoader(repositories, parent);
     }
 
-
-    /**
-     * System property replacement in the given string.
-     *
-     * @param str The original string
-     * @return the modified string
-     */
+    //替换字符串中的${catalina.home}和${catalina.base}
     protected String replace(String str) {
         // Implementation is copied from ClassLoaderLogManager.replace(),
         // but added special processing for catalina.home and catalina.base.
@@ -249,11 +251,12 @@ public final class Bootstrap {
 
 
     /**
-     * Initialize daemon.
+     * 初始化daemon，
      * @throws Exception Fatal initialization error
      */
     public void init() throws Exception {
 
+        //初始化类加载器
         initClassLoaders();
 
         Thread.currentThread().setContextClassLoader(catalinaLoader);
@@ -263,6 +266,7 @@ public final class Bootstrap {
         // Load our startup class and call its process() method
         if (log.isDebugEnabled())
             log.debug("Loading startup class");
+        //加载启动类——Catalina，并获取其实例
         Class<?> startupClass = catalinaLoader.loadClass("org.apache.catalina.startup.Catalina");
         Object startupInstance = startupClass.getConstructor().newInstance();
 
@@ -274,10 +278,12 @@ public final class Bootstrap {
         paramTypes[0] = Class.forName("java.lang.ClassLoader");
         Object paramValues[] = new Object[1];
         paramValues[0] = sharedLoader;
+        //反射调用Catalina的setParentClassLoader方法设置父类加载器为sharedLoader
         Method method =
             startupInstance.getClass().getMethod(methodName, paramTypes);
         method.invoke(startupInstance, paramValues);
 
+        //将实例化出的Catalina设置为Catalina守护
         catalinaDaemon = startupInstance;
 
     }
@@ -306,6 +312,7 @@ public final class Bootstrap {
             catalinaDaemon.getClass().getMethod(methodName, paramTypes);
         if (log.isDebugEnabled())
             log.debug("Calling startup class " + method);
+        //反射调用Catalina的load方法
         method.invoke(catalinaDaemon, param);
 
     }
@@ -348,7 +355,7 @@ public final class Bootstrap {
     public void start()
         throws Exception {
         if( catalinaDaemon==null ) init();
-
+        //反射调用Catalina的start方法
         Method method = catalinaDaemon.getClass().getMethod("start", (Class [] )null);
         method.invoke(catalinaDaemon, (Object [])null);
 
@@ -422,6 +429,7 @@ public final class Bootstrap {
         paramValues[0] = Boolean.valueOf(await);
         Method method =
             catalinaDaemon.getClass().getMethod("setAwait", paramTypes);
+        //反射调用Catalina的setAwait方法
         method.invoke(catalinaDaemon, paramValues);
 
     }
@@ -449,31 +457,31 @@ public final class Bootstrap {
 
 
     /**
-     * Main method and entry point when starting Tomcat via the provided
-     * scripts.
-     *
-     * @param args Command line arguments to be processed
+     * 初始化daemon并使用daemon执行命令（无参数默认启动，有参数则根据参数启动/停止/配置测试）
+     * @param args 命令参数
      */
     public static void main(String args[]) {
 
+        //初始化daemon
         if (daemon == null) {
-            // Don't set daemon until init() has completed
+            // 创建一个Bootstrap对象，初始化并赋值给daemon
             Bootstrap bootstrap = new Bootstrap();
             try {
                 bootstrap.init();
-            } catch (Throwable t) {
+            }
+            //简单打印错误堆栈，然后重新抛出
+            catch (Throwable t) {
                 handleThrowable(t);
                 t.printStackTrace();
                 return;
             }
             daemon = bootstrap;
         } else {
-            // When running as a service the call to stop will be on a new
-            // thread so make sure the correct class loader is used to prevent
-            // a range of class not found exceptions.
+            //有另一个线程已经为daemon赋值，则让当前线程使用daemon的上下文类加载器
             Thread.currentThread().setContextClassLoader(daemon.catalinaLoader);
         }
 
+        //使用daemon执行命令,默认start(调用Catalina的setAwait、load、start)
         try {
             String command = "start";
             if (args.length > 0) {

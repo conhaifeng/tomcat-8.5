@@ -136,8 +136,7 @@ public final class ClassLoaderFactory {
 
 
     /**
-     * Create and return a new class loader, based on the configuration
-     * defaults and the specified directory paths:
+     * 基于默认配置和指定Repository（含字段：类型+路径的简单内部类）创建类加载器
      *
      * @param repositories List of class directories, jar files, jar directories
      *                     or URLS that should be added to the repositories of
@@ -218,6 +217,7 @@ public final class ClassLoaderFactory {
         }
 
         // Construct the class loader itself
+        // 通过Debug获取的array：空
         final URL[] array = set.toArray(new URL[set.size()]);
         if (log.isDebugEnabled())
             for (int i = 0; i < array.length; i++) {

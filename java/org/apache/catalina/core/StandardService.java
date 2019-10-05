@@ -530,11 +530,12 @@ public class StandardService extends LifecycleMBeanBase implements Service {
 
         super.initInternal();
 
+        //先初始化主机容器
         if (engine != null) {
             engine.init();
         }
 
-        // Initialize any Executors
+        // 再初始化所有共享执行器
         for (Executor executor : findExecutors()) {
             if (executor instanceof JmxEnabled) {
                 ((JmxEnabled) executor).setDomain(getDomain());
@@ -542,10 +543,10 @@ public class StandardService extends LifecycleMBeanBase implements Service {
             executor.init();
         }
 
-        // Initialize mapper listener
+        // 初始化监听器
         mapperListener.init();
 
-        // Initialize our defined Connectors
+        // 初始化定义好的连接器（同步）
         synchronized (connectorsLock) {
             for (Connector connector : connectors) {
                 try {

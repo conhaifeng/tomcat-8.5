@@ -21,18 +21,8 @@ package org.apache.catalina;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.mapper.Mapper;
 
-/**
- * A <strong>Service</strong> is a group of one or more
- * <strong>Connectors</strong> that share a single <strong>Container</strong>
- * to process their incoming requests.  This arrangement allows, for example,
- * a non-SSL and SSL connector to share the same population of web apps.
- * <p>
- * A given JVM can contain any number of Service instances; however, they are
- * completely independent of each other and share only the basic JVM facilities
- * and classes on the system class path.
- *
- * @author Craig R. McClanahan
- */
+//Service是一个包含多个连接器Connector和一个主机容器Engine的容器
+//以便于：多个连接器统一为同一个主机容器提供请求-响应连接
 public interface Service extends Lifecycle {
 
     // ------------------------------------------------------------- Properties

@@ -828,26 +828,21 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
         super.initInternal();
 
-        // Register global String cache
-        // Note although the cache is global, if there are multiple Servers
-        // present in the JVM (may happen when embedding) then the same cache
-        // will be registered under multiple names
+        // JNDI服务端注册字符串缓存服务（类型为StringCache）
         onameStringCache = register(new StringCache(), "type=StringCache");
 
-        // Register the MBeanFactory
+        // JNDI服务端注册组件工厂服务（类型为MBeanFactory）
         MBeanFactory factory = new MBeanFactory();
         factory.setContainer(this);
         onameMBeanFactory = register(factory, "type=MBeanFactory");
 
-        // Register the naming resources
+        // 从JDNI命名资源集中提取数据注册到JNDI服务
         globalNamingResources.init();
 
-        // Populate the extension validator with JARs from common and shared
-        // class loaders
+        // 加载类（来自Catalina.properties，在Bootstrap的initClassLoader方法中将jar路径存放至Url类加载器并将此类加载器存放至Catalina中）
         if (getCatalina() != null) {
             ClassLoader cl = getCatalina().getParentClassLoader();
-            // Walk the class loader hierarchy. Stop at the system class loader.
-            // This will add the shared (if present) and common class loaders
+
             while (cl != null && cl != ClassLoader.getSystemClassLoader()) {
                 if (cl instanceof URLClassLoader) {
                     URL[] urls = ((URLClassLoader) cl).getURLs();
@@ -870,7 +865,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
                 cl = cl.getParent();
             }
         }
-        // Initialize our defined Services
+        // 初始化所有Service
         for (int i = 0; i < services.length; i++) {
             services[i].init();
         }
@@ -878,7 +873,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
     @Override
     protected void destroyInternal() throws LifecycleException {
-        // Destroy our defined Services
+        // 摧毁所有Service
         for (int i = 0; i < services.length; i++) {
             services[i].destroy();
         }

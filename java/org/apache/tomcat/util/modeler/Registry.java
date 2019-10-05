@@ -52,20 +52,8 @@ import org.apache.tomcat.util.modeler.modules.ModelerSource;
     checks in the mbean server ?
 */
 
-/**
- * Registry for modeler MBeans.
- *
- * This is the main entry point into modeler. It provides methods to create
- * and manipulate model mbeans and simplify their use.
- *
- * This class is itself an mbean.
- *
- * IMPORTANT: public methods not marked with @since x.x are experimental or
- * internal. Should not be used.
- *
- * @author Craig R. McClanahan
- * @author Costin Manolache
- */
+
+//组件（MBean）注册器：提供创建和操作组件以及简化组件使用的类，其本身也是一个组件
 public class Registry implements RegistryMBean, MBeanRegistration  {
     /**
      * The Log instance to which we will write our log messages.

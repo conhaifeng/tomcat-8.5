@@ -86,9 +86,7 @@ public class Catalina {
      */
     protected boolean await = false;
 
-    /**
-     * Pathname to the server configuration file.
-     */
+    //服务器配置文件路径（-config命令会修改此变量的值）
     protected String configFile = "conf/server.xml";
 
     // XXX Should be moved to embedded
@@ -131,8 +129,11 @@ public class Catalina {
 
     // ----------------------------------------------------------- Constructors
 
+    //构造函数，设置安全防护并加载ExceptionUtils
     public Catalina() {
+        //向Security注册访问权限
         setSecurityProtection();
+        //空方法，提前触发ExceptionUtils（受检异常处理器）的加载
         ExceptionUtils.preload();
     }
 
@@ -255,12 +256,8 @@ public class Catalina {
     }
 
 
-    /**
-     * Return a File object representing our configuration file.
-     * @return the main configuration file
-     */
+    //获取配置文件，位于catalina base路径/配置文件相对路径（默认config/server.xml，命令行-config可配置）
     protected File configFile() {
-
         File file = new File(configFile);
         if (!file.isAbsolute()) {
             file = new File(Bootstrap.getCatalinaBase(), configFile);
@@ -270,10 +267,7 @@ public class Catalina {
     }
 
 
-    /**
-     * Create and configure the Digester we will be using for startup.
-     * @return the main digester to parse server.xml
-     */
+    //解析配置文件server.xml的解析器
     protected Digester createStartDigester() {
         long t1=System.currentTimeMillis();
         // Initialize the digester
@@ -525,9 +519,7 @@ public class Catalina {
     }
 
 
-    /**
-     * Start a new server instance.
-     */
+    //开启一个Server实例
     public void load() {
 
         if (loaded) {
@@ -537,12 +529,13 @@ public class Catalina {
 
         long t1 = System.nanoTime();
 
+        //初始化临时目录
         initDirs();
 
-        // Before digester - it may be needed
+        // 初始化命名Before digester - it may be needed
         initNaming();
 
-        // Create and execute our Digester
+        // 创建并启动配置文件解析器
         Digester digester = createStartDigester();
 
         InputSource inputSource = null;
@@ -550,6 +543,7 @@ public class Catalina {
         File file = null;
         try {
             try {
+                //获取配置文件
                 file = configFile();
                 inputStream = new FileInputStream(file);
                 inputSource = new InputSource(file.toURI().toURL().toString());
@@ -573,8 +567,7 @@ public class Catalina {
                 }
             }
 
-            // This should be included in catalina.jar
-            // Alternative: don't bother with xml, just create it manually.
+            // 配用配置类加载器目录/server-embed.xml
             if (inputStream == null) {
                 try {
                     inputStream = getClass().getClassLoader()
@@ -627,14 +620,16 @@ public class Catalina {
             }
         }
 
+        //设置Server属性（Catalina、Catalina主目录、Catalina根目录）
+        //在Bootstrap的静态块中初始化（先System后用户路径/bootstrap.jar）
         getServer().setCatalina(this);
         getServer().setCatalinaHome(Bootstrap.getCatalinaHomeFile());
         getServer().setCatalinaBase(Bootstrap.getCatalinaBaseFile());
 
-        // Stream redirection
+        //重定向流
         initStreams();
 
-        // Start the new server
+        // 初始化启动Server
         try {
             getServer().init();
         } catch (LifecycleException e) {
@@ -792,6 +787,7 @@ public class Catalina {
     }
 
 
+    //确定系统中java.io.tmpdir属性有效（是目录文件）
     protected void initDirs() {
         String temp = System.getProperty("java.io.tmpdir");
         if (temp == null || (!(new File(temp)).isDirectory())) {
@@ -800,6 +796,7 @@ public class Catalina {
     }
 
 
+    //替换控制台标准输入输出
     protected void initStreams() {
         // Replace System.out and System.err with a custom PrintStream
         System.setOut(new SystemLogHandler(System.out));
@@ -807,6 +804,7 @@ public class Catalina {
     }
 
 
+    //初始化命名
     protected void initNaming() {
         // Setting additional variables
         if (!useNaming) {
@@ -841,8 +839,11 @@ public class Catalina {
      * Set the security package access/protection.
      */
     protected void setSecurityProtection(){
+        //获取SecurityConfig单例，SecurityConfig从catalina.properties文件中读取Security属性（没有则使用默认值）并设置到Security中
         SecurityConfig securityConfig = SecurityConfig.newInstance();
+        //设置包定义权限
         securityConfig.setPackageDefinition();
+        //设置包访问权权限
         securityConfig.setPackageAccess();
     }
 
