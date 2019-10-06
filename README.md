@@ -30,10 +30,10 @@ $$
 | Digester           | 配置解析器，封装了XMLReader，通过配置可读取XML并转化成对象   |
 | Lifecycle          | 生命周期接口，拥有init、start、stop、destroy四个周期API以及添加生命周期监听器LiftcycleListener的API<br />继承自此接口的类有：Server、Service、Connector、Engine、Host、Context |
 | Server             | 代表Tomcat服务器                                             |
-| Service            | 代表一个服务                                                 |
+| Service            | 封装几个连接器和一个主机容器Engine，主要用于分组连接器-主机，便于管理                                                |
 | Connector          | 代表一个连接器，负责维护客户端和服务器端的连接               |
-| Engine             | 代表                                                         |
-| Host               | 代表一个虚拟主机，当浏览器访问                               |
+| Engine             | 主机容器，封装几个主机以便统一管理                                                       |
+| Host               | 代表一个虚拟主机                             |
 | Context            | 代表一个Web应用                                              |
 ![tomcat生命周期](https://upload-images.jianshu.io/upload_images/14456421-50b1cb016c959ff3.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
