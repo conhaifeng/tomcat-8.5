@@ -667,6 +667,7 @@ public class Catalina {
      */
     public void start() {
 
+        //Server尚为空——重新加载
         if (getServer() == null) {
             load();
         }
@@ -678,7 +679,7 @@ public class Catalina {
 
         long t1 = System.nanoTime();
 
-        // Start the new server
+        // 启动Server
         try {
             getServer().start();
         } catch (LifecycleException e) {
@@ -696,7 +697,7 @@ public class Catalina {
             log.info("Server startup in " + ((t2 - t1) / 1000000) + " ms");
         }
 
-        // Register shutdown hook
+        // 如果挂了关闭钩子——初始化钩子
         if (useShutdownHook) {
             if (shutdownHook == null) {
                 shutdownHook = new CatalinaShutdownHook();
@@ -725,6 +726,7 @@ public class Catalina {
      */
     public void stop() {
 
+        //移除关闭钩子（防止被再次触发）
         try {
             // Remove the ShutdownHook first so that server.stop()
             // doesn't get invoked twice
@@ -745,7 +747,7 @@ public class Catalina {
             // fine without the shutdown hook.
         }
 
-        // Shut down the server
+        // 停止并销毁Server
         try {
             Server s = getServer();
             LifecycleState state = s.getState();

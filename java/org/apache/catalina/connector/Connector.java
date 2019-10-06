@@ -46,12 +46,7 @@ import org.apache.tomcat.util.net.openssl.OpenSSLImplementation;
 import org.apache.tomcat.util.res.StringManager;
 
 
-/**
- * Implementation of a Coyote connector.
- *
- * @author Craig R. McClanahan
- * @author Remy Maucherat
- */
+//Connector维护客户端和服务器端的联系
 public class Connector extends LifecycleMBeanBase  {
 
     private static final Log log = LogFactory.getLog(Connector.class);
@@ -71,8 +66,10 @@ public class Connector extends LifecycleMBeanBase  {
     }
 
     public Connector(String protocol) {
+        //设置协议
         setProtocol(protocol);
-        // Instantiate protocol handler
+
+        //实例化协议执行器
         ProtocolHandler p = null;
         try {
             Class<?> clazz = Class.forName(protocolHandlerClassName);
@@ -84,6 +81,7 @@ public class Connector extends LifecycleMBeanBase  {
             this.protocolHandler = p;
         }
 
+        //设置字符集
         if (Globals.STRICT_SERVLET_COMPLIANCE) {
             uriCharset = StandardCharsets.ISO_8859_1;
         } else {
@@ -965,19 +963,21 @@ public class Connector extends LifecycleMBeanBase  {
 
         super.initInternal();
 
-        // Initialize adapter
+        // 初始化协议执行器的连接适配器
         adapter = new CoyoteAdapter(this);
         protocolHandler.setAdapter(adapter);
 
-        // Make sure parseBodyMethodsSet has a default
+        // 确保请求体解析器有效
         if (null == parseBodyMethodsSet) {
             setParseBodyMethods(getParseBodyMethods());
         }
 
+        //协议解析器需要APR/native库——生命周期异常
         if (protocolHandler.isAprRequired() && !AprLifecycleListener.isAprAvailable()) {
             throw new LifecycleException(sm.getString("coyoteConnector.protocolHandlerNoApr",
                     getProtocolHandlerClassName()));
         }
+        //基于JSSE（Java安全socket层）的HTTP协议执行器需要设置SSL实现类的名称
         if (AprLifecycleListener.isAprAvailable() && AprLifecycleListener.getUseOpenSSL() &&
                 protocolHandler instanceof AbstractHttp11JsseProtocol) {
             AbstractHttp11JsseProtocol<?> jsseProtocolHandler =
@@ -990,6 +990,7 @@ public class Connector extends LifecycleMBeanBase  {
         }
 
         try {
+            //初始化协议执行器
             protocolHandler.init();
         } catch (Exception e) {
             throw new LifecycleException(
@@ -1006,15 +1007,17 @@ public class Connector extends LifecycleMBeanBase  {
     @Override
     protected void startInternal() throws LifecycleException {
 
-        // Validate settings before starting
+        // 确认端口号有效
         if (getPort() < 0) {
             throw new LifecycleException(sm.getString(
                     "coyoteConnector.invalidPort", Integer.valueOf(getPort())));
         }
 
+        //切换状态
         setState(LifecycleState.STARTING);
 
         try {
+            //启动协议执行器
             protocolHandler.start();
         } catch (Exception e) {
             throw new LifecycleException(
@@ -1031,9 +1034,11 @@ public class Connector extends LifecycleMBeanBase  {
     @Override
     protected void stopInternal() throws LifecycleException {
 
+        //切换状态
         setState(LifecycleState.STOPPING);
 
         try {
+            //停止协议执行器
             protocolHandler.stop();
         } catch (Exception e) {
             throw new LifecycleException(
@@ -1045,12 +1050,14 @@ public class Connector extends LifecycleMBeanBase  {
     @Override
     protected void destroyInternal() throws LifecycleException {
         try {
+            //销毁协议执行器
             protocolHandler.destroy();
         } catch (Exception e) {
             throw new LifecycleException(
                     sm.getString("coyoteConnector.protocolHandlerDestroyFailed"), e);
         }
 
+        //从所在Service中移除自己
         if (getService() != null) {
             getService().removeConnector(this);
         }

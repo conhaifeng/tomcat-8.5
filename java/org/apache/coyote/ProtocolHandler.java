@@ -20,19 +20,7 @@ import java.util.concurrent.Executor;
 
 import org.apache.tomcat.util.net.SSLHostConfig;
 
-/**
- * Abstract the protocol implementation, including threading, etc.
- * Processor is single threaded and specific to stream-based protocols,
- * will not fit Jk protocols like JNI.
- *
- * This is the main interface to be implemented by a coyote connector.
- * Adapter is the main interface to be implemented by a coyote servlet
- * container.
- *
- * @author Remy Maucherat
- * @author Costin Manolache
- * @see Adapter
- */
+//单线程的协议执行器接口，用于维护流式协议的连接
 public interface ProtocolHandler {
 
     /**

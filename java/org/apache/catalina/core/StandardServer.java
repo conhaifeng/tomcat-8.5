@@ -74,9 +74,11 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
         super();
 
+        //初始化全局命名资源集
         globalNamingResources = new NamingResourcesImpl();
         globalNamingResources.setContainer(this);
 
+        //使用了命名服务——添加命名上下文监听器
         if (isUseNaming()) {
             namingContextListener = new NamingContextListener();
             addLifecycleListener(namingContextListener);
@@ -385,6 +387,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
 
     }
 
+    //停止等待中的线程和socket连接
     public void stopAwait() {
         stopAwait=true;
         Thread t = awaitThread;
@@ -782,12 +785,15 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
     @Override
     protected void startInternal() throws LifecycleException {
 
+        //触发监听器——启动事件
         fireLifecycleEvent(CONFIGURE_START_EVENT, null);
+        //状态切换——启动中
         setState(LifecycleState.STARTING);
 
+        //全局命名资源集启动
         globalNamingResources.start();
 
-        // Start our defined Services
+        // 启动所有Service
         synchronized (servicesLock) {
             for (int i = 0; i < services.length; i++) {
                 services[i].start();
@@ -806,16 +812,18 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
     @Override
     protected void stopInternal() throws LifecycleException {
 
+        //切换状态——停止中；触发监听器——停止事件
         setState(LifecycleState.STOPPING);
         fireLifecycleEvent(CONFIGURE_STOP_EVENT, null);
 
-        // Stop our defined Services
+        // 停止所有Service
         for (int i = 0; i < services.length; i++) {
             services[i].stop();
         }
 
+        //停止全局命名资源集
         globalNamingResources.stop();
-
+        //停止等待中的线程和socket连接
         stopAwait();
     }
 
@@ -877,11 +885,11 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
         for (int i = 0; i < services.length; i++) {
             services[i].destroy();
         }
-
+        //摧毁命名资源集
         globalNamingResources.destroy();
 
+        //取消注册组件工厂和字符串缓存
         unregister(onameMBeanFactory);
-
         unregister(onameStringCache);
 
         super.destroyInternal();

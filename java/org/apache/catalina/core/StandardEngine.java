@@ -58,20 +58,18 @@ public class StandardEngine extends ContainerBase implements Engine {
     // ----------------------------------------------------------- Constructors
 
 
-    /**
-     * Create a new StandardEngine component with the default basic Valve.
-     */
+    //创建拥有默认属性的Engine（Jvm路由：系统jvmRoute属性；后台进程延迟：10）
     public StandardEngine() {
 
         super();
         pipeline.setBasic(new StandardEngineValve());
-        /* Set the jmvRoute using the system property jvmRoute */
+
         try {
             setJvmRoute(System.getProperty("jvmRoute"));
         } catch(Exception ex) {
             log.warn(sm.getString("standardEngine.jvmRouteFail"));
         }
-        // By default, the engine will hold the reloading thread
+
         backgroundProcessorDelay = 10;
 
     }
@@ -252,11 +250,9 @@ public class StandardEngine extends ContainerBase implements Engine {
     @Override
     protected synchronized void startInternal() throws LifecycleException {
 
-        // Log our server identification information
         if(log.isInfoEnabled())
             log.info( "Starting Servlet Engine: " + ServerInfo.getServerInfo());
 
-        // Standard container startup
         super.startInternal();
     }
 

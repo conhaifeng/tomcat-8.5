@@ -416,22 +416,24 @@ public class StandardService extends LifecycleMBeanBase implements Service {
             log.info(sm.getString("standardService.start.name", this.name));
         setState(LifecycleState.STARTING);
 
-        // Start our defined Container first
+        // 同步启动Engine
         if (engine != null) {
             synchronized (engine) {
                 engine.start();
             }
         }
 
+        //同步启动执行器
         synchronized (executors) {
             for (Executor executor: executors) {
                 executor.start();
             }
         }
 
+        //启动映射器监听器
         mapperListener.start();
 
-        // Start our defined Connectors second
+        // 同步启动所有连接器
         synchronized (connectorsLock) {
             for (Connector connector: connectors) {
                 try {
@@ -460,7 +462,7 @@ public class StandardService extends LifecycleMBeanBase implements Service {
     @Override
     protected void stopInternal() throws LifecycleException {
 
-        // Pause connectors first
+        // 同步暂停所有连接器
         synchronized (connectorsLock) {
             for (Connector connector: connectors) {
                 try {
@@ -476,18 +478,19 @@ public class StandardService extends LifecycleMBeanBase implements Service {
             }
         }
 
+        //状态切换
         if(log.isInfoEnabled())
             log.info(sm.getString("standardService.stop.name", this.name));
         setState(LifecycleState.STOPPING);
 
-        // Stop our defined Container second
+        // 停止Engine
         if (engine != null) {
             synchronized (engine) {
                 engine.stop();
             }
         }
 
-        // Now stop the connectors
+        // 同步停止所有连接器
         synchronized (connectorsLock) {
             for (Connector connector: connectors) {
                 if (!LifecycleState.STARTED.equals(
@@ -507,12 +510,12 @@ public class StandardService extends LifecycleMBeanBase implements Service {
             }
         }
 
-        // If the Server failed to start, the mapperListener won't have been
-        // started
+        //停止映射器监听器
         if (mapperListener.getState() != LifecycleState.INITIALIZED) {
             mapperListener.stop();
         }
 
+        //同步停止所有执行器
         synchronized (executors) {
             for (Executor executor: executors) {
                 executor.stop();
@@ -566,9 +569,10 @@ public class StandardService extends LifecycleMBeanBase implements Service {
 
     @Override
     protected void destroyInternal() throws LifecycleException {
+        //摧毁映射器监听器
         mapperListener.destroy();
 
-        // Destroy our defined Connectors
+        // 同步摧毁所有连接器
         synchronized (connectorsLock) {
             for (Connector connector : connectors) {
                 try {
@@ -580,11 +584,12 @@ public class StandardService extends LifecycleMBeanBase implements Service {
             }
         }
 
-        // Destroy any Executors
+        // 摧毁所有执行器
         for (Executor executor : findExecutors()) {
             executor.destroy();
         }
 
+        //摧毁Engine
         if (engine != null) {
             engine.destroy();
         }
