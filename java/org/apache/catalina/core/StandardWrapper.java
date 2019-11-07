@@ -760,6 +760,7 @@ public class StandardWrapper extends ContainerBase
         // If not SingleThreadedModel, return the same instance every time
         if (!singleThreadModel) {
             // Load and initialize our instance if necessary
+        	// 说明第一次请求时才会初始化servlet
             if (instance == null || !instanceInitialized) {
                 synchronized (this) {
                     if (instance == null) {
@@ -1062,6 +1063,7 @@ public class StandardWrapper extends ContainerBase
             }
 
             if (multipartConfigElement == null) {
+            	// 注解的处理
                 MultipartConfig annotation =
                         servlet.getClass().getAnnotation(MultipartConfig.class);
                 if (annotation != null) {
@@ -1086,6 +1088,7 @@ public class StandardWrapper extends ContainerBase
                 singleThreadModel = true;
             }
 
+            // 调用servlet.init()
             initServlet(servlet);
 
             fireContainerEvent("load", this);

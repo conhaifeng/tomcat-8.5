@@ -314,6 +314,7 @@ class StreamProcessor extends AbstractProcessor {
     @Override
     public SocketState service(SocketWrapperBase<?> socket) throws IOException {
         try {
+        	// Adapter.service
             adapter.service(request, response);
         } catch (Exception e) {
             if (log.isDebugEnabled()) {

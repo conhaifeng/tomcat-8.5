@@ -844,7 +844,7 @@ public final class StandardServer extends LifecycleMBeanBase implements Server {
         factory.setContainer(this);
         onameMBeanFactory = register(factory, "type=MBeanFactory");
 
-        // 从JDNI命名资源集中提取数据注册到JNDI服务
+        // 从JNDI命名资源集中提取数据注册到JNDI服务
         globalNamingResources.init();
 
         // 加载类（来自Catalina.properties，在Bootstrap的initClassLoader方法中将jar路径存放至Url类加载器并将此类加载器存放至Catalina中）

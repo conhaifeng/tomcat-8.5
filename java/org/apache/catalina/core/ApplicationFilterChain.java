@@ -172,6 +172,7 @@ public final class ApplicationFilterChain implements FilterChain {
         throws IOException, ServletException {
 
         // Call the next filter if there is one
+    	// 依次调用过滤器链
         if (pos < n) {
             ApplicationFilterConfig filterConfig = filters[pos++];
             try {
@@ -228,6 +229,7 @@ public final class ApplicationFilterChain implements FilterChain {
                                            args,
                                            principal);
             } else {
+            	// 调用servlet.service(), 进行业务处理
                 servlet.service(request, response);
             }
         } catch (IOException | ServletException | RuntimeException e) {

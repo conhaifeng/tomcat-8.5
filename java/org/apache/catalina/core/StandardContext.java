@@ -5267,6 +5267,7 @@ public class StandardContext extends ContainerBase
 
             // Load and initialize all "load on startup" servlets
             if (ok) {
+            	// 初始化所有标识为"load on startup"的servlet
                 if (!loadOnStartup(findChildren())){
                     log.error(sm.getString("standardContext.servletFail"));
                     ok = false;

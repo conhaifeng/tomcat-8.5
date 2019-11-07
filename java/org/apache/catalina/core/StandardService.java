@@ -426,6 +426,7 @@ public class StandardService extends LifecycleMBeanBase implements Service {
         //同步启动执行器
         synchronized (executors) {
             for (Executor executor: executors) {
+            	// StandardThreadExecutor完成初始化
                 executor.start();
             }
         }

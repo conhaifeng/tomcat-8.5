@@ -340,6 +340,7 @@ public class CoyoteAdapter implements Adapter {
                 request.setAsyncSupported(
                         connector.getService().getContainer().getPipeline().isAsyncSupported());
                 // Calling the container
+                // 交给容器处理请求
                 connector.getService().getContainer().getPipeline().getFirst().invoke(
                         request, response);
             }
@@ -693,6 +694,7 @@ public class CoyoteAdapter implements Adapter {
 
         while (mapRequired) {
             // This will map the the latest version by default
+        	// 根据`serverName/url`匹配`Wrapper`
             connector.getService().getMapper().map(serverName, decodedURI,
                     version, request.getMappingData());
 

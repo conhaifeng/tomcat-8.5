@@ -183,6 +183,9 @@ final class StandardWrapperValve
                         if (request.isAsyncDispatching()) {
                             request.getAsyncContextInternal().doInternalDispatch();
                         } else {
+                        	// 此处完成两步操作
+                        	// 1. 依次调用过滤器链
+                        	// 2. 调用servlet.service(req, resp)
                             filterChain.doFilter(request.getRequest(),
                                     response.getResponse());
                         }

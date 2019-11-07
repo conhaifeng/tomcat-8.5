@@ -433,6 +433,7 @@ public class HostConfig implements LifecycleListener {
         // Deploy XML descriptors from configBase
         deployDescriptors(configBase, configBase.list());
         // Deploy WARs
+        // 最常见的形式
         deployWARs(appBase, filteredAppPaths);
         // Deploy expanded folders
         deployDirectories(appBase, filteredAppPaths);
